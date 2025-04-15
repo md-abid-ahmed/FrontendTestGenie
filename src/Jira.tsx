@@ -59,7 +59,7 @@ const mockResponseData: UserData = {
     },
     {
       endPoint: "v1/customer/cust/custv1/customer/cust/cust/",
-      request: "",
+      request: "hellobhai/byebhai/hellokahaho/areykahahaibhai/areyhello/",
       method: "POST",
       statuscode: 404,
       additional_instructions: ["This story will be converted to karate"]
@@ -259,34 +259,37 @@ const Jira: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="features-container">
-                            <div className="feature-card">
-                                <div className="feature-icon">🔥</div>
-                                <h3 className="feature-title">Generate Karate Tests</h3>
-                                <p className="feature-description">
-                                    Automatically generate Karate test cases from JIRA stories. This feature
-                                    simplifies the process of creating test cases by converting JIRA tickets into
-                                    ready-to-use Karate test scripts.
-                                </p>
-                            </div>
+                        <div className="section-container">
+                            <h2 className="section-title">Key Features</h2>
+                            <div className="features-container">
+                                <div className="feature-card">
+                                    <div className="feature-icon">🔥</div>
+                                    <h3 className="feature-title">Generate Karate Tests</h3>
+                                    <p className="feature-description">
+                                        Automatically generate Karate test cases from JIRA stories. This feature
+                                        simplifies the process of creating test cases by converting JIRA tickets into
+                                        ready-to-use Karate test scripts.
+                                    </p>
+                                </div>
 
-                            <div className="feature-card">
-                                <div className="feature-icon">🔄</div>
-                                <h3 className="feature-title">Multi-Test Support</h3>
-                                <p className="feature-description">
-                                    Supports multiple test types such as API testing, integration testing, and
-                                    Contract Testing. This ensures comprehensive test coverage for your
-                                    application.
-                                </p>
-                            </div>
+                                <div className="feature-card">
+                                    <div className="feature-icon">🔄</div>
+                                    <h3 className="feature-title">Multi-Test Support</h3>
+                                    <p className="feature-description">
+                                        Supports multiple test types such as API testing, integration testing, and
+                                        Contract Testing. This ensures comprehensive test coverage for your
+                                        application.
+                                    </p>
+                                </div>
 
-                            <div className="feature-card">
-                                <div className="feature-icon">💡</div>
-                                <h3 className="feature-title">Real-Time Feedback</h3>
-                                <p className="feature-description">
-                                    Get real-time feedback and results for your test cases. This feature helps
-                                    you quickly identify issues and improve the quality of your tests.
-                                </p>
+                                <div className="feature-card">
+                                    <div className="feature-icon">💡</div>
+                                    <h3 className="feature-title">Real-Time Feedback</h3>
+                                    <p className="feature-description">
+                                        Get real-time feedback and results for your test cases. This feature helps
+                                        you quickly identify issues and improve the quality of your tests.
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </>
