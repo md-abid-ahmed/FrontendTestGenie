@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './AFR.css';
 
-interface WaiverInfo {
+interface SingleAccountResponse {
   "Account Number": string;
   "Date": number;
   "Waivers Applied": string[];
@@ -9,459 +9,311 @@ interface WaiverInfo {
   "Waivers not applied": string[];
 }
 
-interface FeeSummary {
+interface MultipleAccountResponse {
+  "Account Number": string;
+  "Date": number;
+  "Waivers Applied": string[];
+  "Waivers Count": number;
+  "Waivers not applied": string[];
+}
+
+interface FeeSummaryResponse {
   "account_number": string;
-  "detailed_breakdown": {
+  "detailed_breakdown": Array<{
     "Applied Mnemonics": string[];
     "Fee Amount": number;
     "Fee Date (CYYMMDD)": number;
     "Service Charge to Pay": number;
     "Waived": boolean;
-  }[];
+  }>;
   "end_fee_date": string;
   "start_fee_date": string;
   "total_paid": number;
   "total_saved": number;
 }
 
-interface PopularMnemonic {
-  mnemonic: string;
-  count: number;
+interface MnemonicUsageResponse {
+  "mnemonic": string;
+  "usage_count": number;
+  "percentage": number;
 }
 
 const AFR: React.FC = () => {
   // State variables
-  const [searchType, setSearchType] = useState<'single' | 'multiple' | 'summary'>('single');
+  const [queryType, setQueryType] = useState<string>('single');
   const [accountNumber, setAccountNumber] = useState<string>('');
   const [accountNumbers, setAccountNumbers] = useState<string>('');
   const [feeDate, setFeeDate] = useState<string>('');
-  const [startDate, setStartDate] = useState<string>('');
-  const [endDate, setEndDate] = useState<string>('');
-  const [waiverInfo, setWaiverInfo] = useState<WaiverInfo | null>(null);
-  const [multipleWaiverInfo, setMultipleWaiverInfo] = useState<any[] | null>(null);
-  const [feeSummary, setFeeSummary] = useState<FeeSummary | null>(null);
-  const [popularMnemonics, setPopularMnemonics] = useState<PopularMnemonic[]>([]);
+  const [startFeeDate, setStartFeeDate] = useState<string>('');
+  const [endFeeDate, setEndFeeDate] = useState<string>('');
+  const [singleResponse, setSingleResponse] = useState<SingleAccountResponse | null>(null);
+  const [multipleResponse, setMultipleResponse] = useState<MultipleAccountResponse[] | null>(null);
+  const [feeSummaryResponse, setFeeSummaryResponse] = useState<FeeSummaryResponse | null>(null);
+  const [mnemonicUsage, setMnemonicUsage] = useState<MnemonicUsageResponse[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string>('');
+  const [activeTab, setActiveTab] = useState<string>('search');
 
-  // Fetch popular mnemonics on component mount
+  // Fetch most used mnemonics on component mount
   useEffect(() => {
-    fetchPopularMnemonics();
+    fetchMostUsedMnemonics();
   }, []);
 
-  const fetchPopularMnemonics = async () => {
+  const fetchMostUsedMnemonics = async () => {
     try {
-      const response = await fetch('http://127.0.0.1:5000/popular_mnemonics');
-      if (!response.ok) {
-        throw new Error('Failed to fetch popular mnemonics');
-      }
+      const response = await fetch('http://127.0.0.1:5000/mnemonic_usage');
+      if (!response.ok) throw new Error('Failed to fetch mnemonic usage data');
       const data = await response.json();
-      setPopularMnemonics(data);
+      setMnemonicUsage(data);
     } catch (err) {
-      console.error('Error fetching popular mnemonics:', err);
-      setError('Failed to load popular mnemonics. Please try again later.');
+      console.error('Error fetching mnemonic usage:', err);
+      setError('Failed to load mnemonic usage data');
     }
   };
 
-  const handleSingleSearch = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
-    setWaiverInfo(null);
-    
+    setError('');
+    setSingleResponse(null);
+    setMultipleResponse(null);
+    setFeeSummaryResponse(null);
+
     try {
-      const response = await fetch('http://127.0.0.1:5000/search', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          account_number: accountNumber,
-          fee_date: parseInt(feeDate)
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch waiver information');
+      switch (queryType) {
+        case 'single':
+          await fetchSingleAccount();
+          break;
+        case 'multiple':
+          await fetchMultipleAccounts();
+          break;
+        case 'summary':
+          await fetchFeeSummary();
+          break;
+        default:
+          setError('Invalid query type');
       }
-
-      const data = await response.json();
-      setWaiverInfo(data);
     } catch (err) {
-      console.error('Error fetching waiver info:', err);
-      setError('Failed to fetch waiver information. Please try again.');
+      console.error('Error submitting form:', err);
+      setError('An error occurred while processing your request');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleMultipleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setMultipleWaiverInfo(null);
-    
-    try {
-      const accountArray = accountNumbers.split(',').map(acc => acc.trim());
-      
-      const response = await fetch('http://127.0.0.1:5000/post_search_multiple', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          account_numbers: accountArray,
-          fee_date: parseInt(feeDate)
-        }),
-      });
+  const fetchSingleAccount = async () => {
+    const response = await fetch('http://127.0.0.1:5000/search', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        account_number: accountNumber,
+        fee_date: parseInt(feeDate),
+      }),
+    });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch multiple waiver information');
-      }
-
-      const data = await response.json();
-      setMultipleWaiverInfo(data);
-    } catch (err) {
-      console.error('Error fetching multiple waiver info:', err);
-      setError('Failed to fetch multiple waiver information. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+    if (!response.ok) throw new Error('Failed to fetch single account data');
+    const data = await response.json();
+    setSingleResponse(data);
   };
 
-  const handleFeeSummary = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setFeeSummary(null);
+  const fetchMultipleAccounts = async () => {
+    const accountArray = accountNumbers.split(',').map(acc => acc.trim());
     
-    try {
-      const response = await fetch('http://127.0.0.1:5000/fee_summary', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          account_number: accountNumber,
-          start_fee_date: parseInt(startDate),
-          end_fee_date: parseInt(endDate)
-        }),
-      });
+    const response = await fetch('http://127.0.0.1:5000/post_search_multiple', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        account_numbers: accountArray,
+        fee_date: parseInt(feeDate),
+      }),
+    });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch fee summary');
-      }
-
-      const data = await response.json();
-      setFeeSummary(data);
-    } catch (err) {
-      console.error('Error fetching fee summary:', err);
-      setError('Failed to fetch fee summary. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+    if (!response.ok) throw new Error('Failed to fetch multiple account data');
+    const data = await response.json();
+    setMultipleResponse(data);
   };
 
-  const renderPopularMnemonics = () => {
-    if (popularMnemonics.length === 0) {
-      return <div className="no-data">No popular mnemonics data available</div>;
-    }
+  const fetchFeeSummary = async () => {
+    const response = await fetch('http://127.0.0.1:5000/fee_summary', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        account_number: accountNumber,
+        start_fee_date: parseInt(startFeeDate),
+        end_fee_date: parseInt(endFeeDate),
+      }),
+    });
+
+    if (!response.ok) throw new Error('Failed to fetch fee summary data');
+    const data = await response.json();
+    setFeeSummaryResponse(data);
+  };
+
+  const renderSingleResponse = () => {
+    if (!singleResponse) return null;
 
     return (
-      <div className="popular-mnemonics">
-        <h3>Most Used Mnemonics</h3>
-        <div className="mnemonics-list">
-          {popularMnemonics.slice(0, 5).map((item, index) => (
-            <div key={index} className="mnemonic-item">
-              <div className="mnemonic-name">{item.mnemonic}</div>
-              <div className="mnemonic-count">{item.count}</div>
-              <div className="mnemonic-bar">
-                <div 
-                  className="mnemonic-fill" 
-                  style={{ width: `${Math.min(100, (item.count / Math.max(...popularMnemonics.map(m => m.count))) * 100)}%` }}
-                ></div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  };
-
-  const renderSingleSearchForm = () => (
-    <form onSubmit={handleSingleSearch} className="search-form">
-      <div className="form-group">
-        <label htmlFor="accountNumber">Account Number</label>
-        <input
-          type="text"
-          id="accountNumber"
-          value={accountNumber}
-          onChange={(e) => setAccountNumber(e.target.value)}
-          required
-          placeholder="Enter account number"
-        />
-      </div>
-      <div className="form-group">
-        <label htmlFor="feeDate">Fee Date (CYYMMDD)</label>
-        <input
-          type="text"
-          id="feeDate"
-          value={feeDate}
-          onChange={(e) => setFeeDate(e.target.value)}
-          required
-          placeholder="Enter fee date (e.g., 1250204)"
-        />
-      </div>
-      <button type="submit" className="btn-search" disabled={loading}>
-        {loading ? 'Searching...' : 'Search'}
-      </button>
-    </form>
-  );
-
-  const renderMultipleSearchForm = () => (
-    <form onSubmit={handleMultipleSearch} className="search-form">
-      <div className="form-group">
-        <label htmlFor="accountNumbers">Account Numbers (comma separated)</label>
-        <input
-          type="text"
-          id="accountNumbers"
-          value={accountNumbers}
-          onChange={(e) => setAccountNumbers(e.target.value)}
-          required
-          placeholder="Enter account numbers (e.g., 1234,5678)"
-        />
-      </div>
-      <div className="form-group">
-        <label htmlFor="multipleDate">Fee Date (CYYMMDD)</label>
-        <input
-          type="text"
-          id="multipleDate"
-          value={feeDate}
-          onChange={(e) => setFeeDate(e.target.value)}
-          required
-          placeholder="Enter fee date (e.g., 1250204)"
-        />
-      </div>
-      <button type="submit" className="btn-search" disabled={loading}>
-        {loading ? 'Searching...' : 'Search Multiple'}
-      </button>
-    </form>
-  );
-
-  const renderFeeSummaryForm = () => (
-    <form onSubmit={handleFeeSummary} className="search-form">
-      <div className="form-group">
-        <label htmlFor="summaryAccount">Account Number</label>
-        <input
-          type="text"
-          id="summaryAccount"
-          value={accountNumber}
-          onChange={(e) => setAccountNumber(e.target.value)}
-          required
-          placeholder="Enter account number"
-        />
-      </div>
-      <div className="form-group">
-        <label htmlFor="startDate">Start Fee Date (CYYMMDD)</label>
-        <input
-          type="text"
-          id="startDate"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          required
-          placeholder="Enter start date (e.g., 1250101)"
-        />
-      </div>
-      <div className="form-group">
-        <label htmlFor="endDate">End Fee Date (CYYMMDD)</label>
-        <input
-          type="text"
-          id="endDate"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-          required
-          placeholder="Enter end date (e.g., 1250401)"
-        />
-      </div>
-      <button type="submit" className="btn-search" disabled={loading}>
-        {loading ? 'Generating...' : 'Generate Summary'}
-      </button>
-    </form>
-  );
-
-  const renderSingleWaiverResults = () => {
-    if (!waiverInfo) return null;
-
-    return (
-      <div className="results-container">
-        <div className="results-header">
-          <h3>Waiver Information</h3>
-          <span className="account-badge">Account: {waiverInfo["Account Number"]}</span>
-        </div>
-        <div className="results-body">
-          <div className="info-card">
-            <div className="info-card-header">
-              <h4>Waivers Applied ({waiverInfo["Waivers Count"]})</h4>
-              <span className={`status-badge ${waiverInfo["Waivers Count"] > 0 ? 'success' : 'neutral'}`}>
-                {waiverInfo["Waivers Count"] > 0 ? 'Waiver Active' : 'No Waivers'}
-              </span>
-            </div>
-            <div className="info-card-body">
-              {waiverInfo["Waivers Applied"].length > 0 ? (
-                <ul className="waiver-list">
-                  {waiverInfo["Waivers Applied"].map((waiver, idx) => (
-                    <li key={idx} className="waiver-item applied">
-                      <span className="waiver-icon">✓</span>
-                      <span className="waiver-name">{waiver}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="no-data">No waivers applied</p>
-              )}
-            </div>
+      <div className="response-container">
+        <h3>Account Waiver Information</h3>
+        <div className="response-card">
+          <div className="response-header">
+            <div className="response-title">Account: {singleResponse["Account Number"]}</div>
+            <div className="response-subtitle">Date: {singleResponse["Date"]}</div>
           </div>
-          
-          <div className="info-card">
-            <div className="info-card-header">
+          <div className="response-body">
+            <div className="waiver-section">
+              <h4>Waivers Applied ({singleResponse["Waivers Count"]})</h4>
+              <ul className="waiver-list">
+                {singleResponse["Waivers Applied"].map((waiver, index) => (
+                  <li key={`applied-${index}`} className="waiver-item applied">
+                    <span className="waiver-icon">✓</span>
+                    <span className="waiver-text">{waiver}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            
+            <div className="waiver-section">
               <h4>Waivers Not Applied</h4>
+              <ul className="waiver-list">
+                {singleResponse["Waivers not applied"].map((waiver, index) => (
+                  <li key={`not-applied-${index}`} className="waiver-item not-applied">
+                    <span className="waiver-icon">✗</span>
+                    <span className="waiver-text">{waiver}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
-            <div className="info-card-body">
-              {waiverInfo["Waivers not applied"].length > 0 ? (
-                <ul className="waiver-list">
-                  {waiverInfo["Waivers not applied"].map((waiver, idx) => (
-                    <li key={idx} className="waiver-item not-applied">
-                      <span className="waiver-icon">✕</span>
-                      <span className="waiver-name">{waiver}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="no-data">All waivers applied</p>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderMultipleWaiverResults = () => {
-    if (!multipleWaiverInfo) return null;
-
-    return (
-      <div className="results-container">
-        <div className="results-header">
-          <h3>Multiple Accounts Waiver Information</h3>
-          <span className="date-badge">Date: {feeDate}</span>
-        </div>
-        <div className="multiple-results">
-          {multipleWaiverInfo.map((account, idx) => (
-            <div key={idx} className="account-result">
-              <div className="account-header">
-                <h4>Account: {account["Account Number"]}</h4>
-                <span className={`status-badge ${account["Waivers Count"] > 0 ? 'success' : 'neutral'}`}>
-                  {account["Waivers Count"] > 0 ? 'Waiver Active' : 'No Waivers'}
+            
+            <div className="waiver-summary">
+              <div className="waiver-status">
+                <span className={`status-indicator ${singleResponse["Waivers Count"] > 0 ? 'status-applied' : 'status-not-applied'}`}></span>
+                <span className="status-text">
+                  {singleResponse["Waivers Count"] > 0 ? 'Waiver Applied' : 'No Waivers Applied'}
                 </span>
               </div>
-              
-              <div className="account-details">
-                <div className="waiver-section">
-                  <h5>Applied ({account["Waivers Count"]})</h5>
-                  {account["Waivers Applied"].length > 0 ? (
-                    <ul className="mini-waiver-list">
-                      {account["Waivers Applied"].map((waiver: string, widx: number) => (
-                        <li key={widx} className="mini-waiver-item">{waiver}</li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="no-data-small">None</p>
-                  )}
-                </div>
-                
-                <div className="waiver-section">
-                  <h5>Not Applied</h5>
-                  {account["Waivers not applied"].length > 0 ? (
-                    <ul className="mini-waiver-list not-applied-list">
-                      {account["Waivers not applied"].slice(0, 3).map((waiver: string, widx: number) => (
-                        <li key={widx} className="mini-waiver-item">{waiver}</li>
-                      ))}
-                      {account["Waivers not applied"].length > 3 && (
-                        <li className="mini-waiver-item more-item">+{account["Waivers not applied"].length - 3} more</li>
-                      )}
-                    </ul>
-                  ) : (
-                    <p className="no-data-small">All applied</p>
-                  )}
-                </div>
-              </div>
             </div>
-          ))}
+          </div>
         </div>
       </div>
     );
   };
 
-  const renderFeeSummaryResults = () => {
-    if (!feeSummary) return null;
+  const renderMultipleResponse = () => {
+    if (!multipleResponse) return null;
 
     return (
-      <div className="results-container">
-        <div className="results-header">
-          <h3>Fee Summary</h3>
-          <span className="account-badge">Account: {feeSummary.account_number}</span>
-        </div>
-        
-        <div className="summary-stats">
-          <div className="stat-card">
-            <div className="stat-value">${feeSummary.total_saved.toFixed(2)}</div>
-            <div className="stat-label">Total Saved</div>
+      <div className="response-container">
+        <h3>Multiple Accounts Waiver Information</h3>
+        {multipleResponse.map((account, accountIndex) => (
+          <div key={`account-${accountIndex}`} className="response-card">
+            <div className="response-header">
+              <div className="response-title">Account: {account["Account Number"]}</div>
+              <div className="response-subtitle">Date: {account["Date"]}</div>
+            </div>
+            <div className="response-body">
+              <div className="waiver-section">
+                <h4>Waivers Applied ({account["Waivers Count"]})</h4>
+                <ul className="waiver-list">
+                  {account["Waivers Applied"].map((waiver, index) => (
+                    <li key={`applied-${accountIndex}-${index}`} className="waiver-item applied">
+                      <span className="waiver-icon">✓</span>
+                      <span className="waiver-text">{waiver}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              
+              <div className="waiver-section">
+                <h4>Waivers Not Applied</h4>
+                <ul className="waiver-list">
+                  {account["Waivers not applied"].map((waiver, index) => (
+                    <li key={`not-applied-${accountIndex}-${index}`} className="waiver-item not-applied">
+                      <span className="waiver-icon">✗</span>
+                      <span className="waiver-text">{waiver}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              
+              <div className="waiver-summary">
+                <div className="waiver-status">
+                  <span className={`status-indicator ${account["Waivers Count"] > 0 ? 'status-applied' : 'status-not-applied'}`}></span>
+                  <span className="status-text">
+                    {account["Waivers Count"] > 0 ? 'Waiver Applied' : 'No Waivers Applied'}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="stat-card">
-            <div className="stat-value">${feeSummary.total_paid.toFixed(2)}</div>
-            <div className="stat-label">Total Paid</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-value">{feeSummary.detailed_breakdown.length}</div>
-            <div className="stat-label">Fee Transactions</div>
-          </div>
-        </div>
-        
-        <div className="timeline-container">
-          <div className="timeline-header">
-            <h4>Fee Transaction Timeline</h4>
-            <div className="date-range">
-              <span>{feeSummary.start_fee_date}</span>
-              <span className="date-separator">to</span>
-              <span>{feeSummary.end_fee_date}</span>
+        ))}
+      </div>
+    );
+  };
+
+  const renderFeeSummary = () => {
+    if (!feeSummaryResponse) return null;
+
+    return (
+      <div className="response-container">
+        <h3>Fee Summary</h3>
+        <div className="summary-card">
+          <div className="summary-header">
+            <div className="summary-title">Account: {feeSummaryResponse.account_number}</div>
+            <div className="summary-dates">
+              <span>Period: {feeSummaryResponse.start_fee_date} - {feeSummaryResponse.end_fee_date}</span>
             </div>
           </div>
           
-          <div className="timeline">
-            {feeSummary.detailed_breakdown.map((item, idx) => (
-              <div key={idx} className={`timeline-item ${item.Waived ? 'waived' : 'charged'}`}>
-                <div className="timeline-date">
-                  {String(item["Fee Date (CYYMMDD)"]).substring(0, 2)}/
-                  {String(item["Fee Date (CYYMMDD)"]).substring(2, 4)}/
-                  {String(item["Fee Date (CYYMMDD)"]).substring(4)}
+          <div className="summary-totals">
+            <div className="total-item">
+              <span className="total-label">Total Paid:</span>
+              <span className="total-value">${feeSummaryResponse.total_paid.toFixed(2)}</span>
+            </div>
+            <div className="total-item saved">
+              <span className="total-label">Total Saved:</span>
+              <span className="total-value">${feeSummaryResponse.total_saved.toFixed(2)}</span>
+            </div>
+          </div>
+          
+          <h4>Detailed Breakdown</h4>
+          <div className="detailed-breakdown">
+            {feeSummaryResponse.detailed_breakdown.map((item, index) => (
+              <div key={`breakdown-${index}`} className="breakdown-item">
+                <div className="breakdown-header">
+                  <span className="breakdown-date">Date: {item["Fee Date (CYYMMDD)"]}</span>
+                  <span className={`breakdown-status ${item.Waived ? 'waived' : 'not-waived'}`}>
+                    {item.Waived ? 'Waived' : 'Not Waived'}
+                  </span>
                 </div>
-                <div className="timeline-marker"></div>
-                <div className="timeline-content">
-                  <div className="timeline-amount">
-                    ${item["Fee Amount"].toFixed(2)}
-                    <span className={`timeline-status ${item.Waived ? 'waived-text' : 'charged-text'}`}>
-                      {item.Waived ? 'Waived' : 'Charged'}
-                    </span>
+                
+                <div className="breakdown-details">
+                  <div className="breakdown-fee">
+                    <span className="breakdown-label">Fee Amount:</span>
+                    <span className="breakdown-value">${item["Fee Amount"].toFixed(2)}</span>
                   </div>
-                  {item["Applied Mnemonics"].length > 0 && (
-                    <div className="timeline-mnemonics">
-                      <span className="mnemonics-label">Applied Mnemonics:</span>
-                      {item["Applied Mnemonics"].map((mnemonic, midx) => (
-                        <span key={midx} className="timeline-mnemonic">{mnemonic}</span>
-                      ))}
-                    </div>
-                  )}
+                  <div className="breakdown-charge">
+                    <span className="breakdown-label">Service Charge:</span>
+                    <span className="breakdown-value">${item["Service Charge to Pay"].toFixed(2)}</span>
+                  </div>
                 </div>
+                
+                {item["Applied Mnemonics"].length > 0 && (
+                  <div className="applied-mnemonics">
+                    <span className="mnemonics-label">Applied Mnemonics:</span>
+                    <ul className="mnemonics-list">
+                      {item["Applied Mnemonics"].map((mnemonic, mIndex) => (
+                        <li key={`mnemonic-${index}-${mIndex}`} className="mnemonic-item">{mnemonic}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -470,61 +322,220 @@ const AFR: React.FC = () => {
     );
   };
 
+  const renderMnemonicUsage = () => {
+    return (
+      <div className="mnemonic-usage-container">
+        <h3>Most Used Mnemonics</h3>
+        <div className="mnemonic-chart">
+          {mnemonicUsage.map((item, index) => (
+            <div key={`mnemonic-usage-${index}`} className="mnemonic-usage-item">
+              <div className="mnemonic-usage-bar-container">
+                <div 
+                  className="mnemonic-usage-bar" 
+                  style={{ width: `${item.percentage}%` }}
+                ></div>
+                <span className="mnemonic-usage-label">{item.mnemonic}</span>
+                <span className="mnemonic-usage-count">{item.usage_count}</span>
+              </div>
+              <div className="mnemonic-usage-percentage">{item.percentage.toFixed(1)}%</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const renderForm = () => {
+    return (
+      <form onSubmit={handleSubmit} className="search-form">
+        <div className="form-group">
+          <label htmlFor="queryType">Query Type</label>
+          <select
+            id="queryType"
+            value={queryType}
+            onChange={(e) => setQueryType(e.target.value)}
+            className="form-control"
+          >
+            <option value="single">Single Account</option>
+            <option value="multiple">Multiple Accounts</option>
+            <option value="summary">Fee Summary</option>
+          </select>
+        </div>
+
+        {queryType === 'single' && (
+          <>
+            <div className="form-group">
+              <label htmlFor="accountNumber">Account Number</label>
+              <input
+                type="text"
+                id="accountNumber"
+                value={accountNumber}
+                onChange={(e) => setAccountNumber(e.target.value)}
+                className="form-control"
+                placeholder="Enter account number"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="feeDate">Fee Date (CYYMMDD)</label>
+              <input
+                type="text"
+                id="feeDate"
+                value={feeDate}
+                onChange={(e) => setFeeDate(e.target.value)}
+                className="form-control"
+                placeholder="Enter fee date in CYYMMDD format"
+                required
+              />
+            </div>
+          </>
+        )}
+
+        {queryType === 'multiple' && (
+          <>
+            <div className="form-group">
+              <label htmlFor="accountNumbers">Account Numbers (comma separated)</label>
+              <input
+                type="text"
+                id="accountNumbers"
+                value={accountNumbers}
+                onChange={(e) => setAccountNumbers(e.target.value)}
+                className="form-control"
+                placeholder="Enter account numbers separated by commas"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="feeDate">Fee Date (CYYMMDD)</label>
+              <input
+                type="text"
+                id="feeDate"
+                value={feeDate}
+                onChange={(e) => setFeeDate(e.target.value)}
+                className="form-control"
+                placeholder="Enter fee date in CYYMMDD format"
+                required
+              />
+            </div>
+          </>
+        )}
+
+        {queryType === 'summary' && (
+          <>
+            <div className="form-group">
+              <label htmlFor="accountNumber">Account Number</label>
+              <input
+                type="text"
+                id="accountNumber"
+                value={accountNumber}
+                onChange={(e) => setAccountNumber(e.target.value)}
+                className="form-control"
+                placeholder="Enter account number"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="startFeeDate">Start Date (CYYMMDD)</label>
+              <input
+                type="text"
+                id="startFeeDate"
+                value={startFeeDate}
+                onChange={(e) => setStartFeeDate(e.target.value)}
+                className="form-control"
+                placeholder="Enter start date in CYYMMDD format"
+                required
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="endFeeDate">End Date (CYYMMDD)</label>
+              <input
+                type="text"
+                id="endFeeDate"
+                value={endFeeDate}
+                onChange={(e) => setEndFeeDate(e.target.value)}
+                className="form-control"
+                placeholder="Enter end date in CYYMMDD format"
+                required
+              />
+            </div>
+          </>
+        )}
+
+        <button type="submit" className="submit-btn" disabled={loading}>
+          {loading ? 'Processing...' : 'Search'}
+        </button>
+      </form>
+    );
+  };
+
   return (
     <div className="afr-container">
-      <div className="header">
-        <div className="logo">
-          <div className="logo-icon">
+      <header className="afr-header">
+        <div className="logo-container">
+          <div className="logo">
             <div className="stagecoach"></div>
+            <span className="logo-text">Wells Fargo</span>
           </div>
-          <h1>Wells Fargo</h1>
+          <h1>Account Fee Review</h1>
         </div>
-        <h2>Account Fee Review</h2>
-      </div>
-      
-      {renderPopularMnemonics()}
-      
-      <div className="main-content">
-        <div className="search-container">
-          <div className="search-tabs">
-            <button 
-              className={`tab-button ${searchType === 'single' ? 'active' : ''}`}
-              onClick={() => setSearchType('single')}
-            >
-              Single Account
-            </button>
-            <button 
-              className={`tab-button ${searchType === 'multiple' ? 'active' : ''}`}
-              onClick={() => setSearchType('multiple')}
-            >
-              Multiple Accounts
-            </button>
-            <button 
-              className={`tab-button ${searchType === 'summary' ? 'active' : ''}`}
-              onClick={() => setSearchType('summary')}
-            >
-              Fee Summary
-            </button>
+        <div className="tabs">
+          <button 
+            className={`tab-btn ${activeTab === 'search' ? 'active' : ''}`}
+            onClick={() => setActiveTab('search')}
+          >
+            Fee Search
+          </button>
+          <button 
+            className={`tab-btn ${activeTab === 'analytics' ? 'active' : ''}`}
+            onClick={() => setActiveTab('analytics')}
+          >
+            Mnemonic Analytics
+          </button>
+        </div>
+      </header>
+
+      <main className="afr-main">
+        {activeTab === 'search' ? (
+          <div className="search-container">
+            <div className="panel search-panel">
+              <h2>Fee Waiver Lookup</h2>
+              {renderForm()}
+              {error && <div className="error-message">{error}</div>}
+            </div>
+            
+            <div className="panel results-panel">
+              <h2>Results</h2>
+              {loading ? (
+                <div className="loading">
+                  <div className="spinner"></div>
+                  <p>Processing your request...</p>
+                </div>
+              ) : (
+                <>
+                  {queryType === 'single' && renderSingleResponse()}
+                  {queryType === 'multiple' && renderMultipleResponse()}
+                  {queryType === 'summary' && renderFeeSummary()}
+                  {!singleResponse && !multipleResponse && !feeSummaryResponse && !loading && (
+                    <div className="no-results">
+                      <p>Enter search criteria and click Search to see results.</p>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
           </div>
-          
-          <div className="search-panel">
-            {searchType === 'single' && renderSingleSearchForm()}
-            {searchType === 'multiple' && renderMultipleSearchForm()}
-            {searchType === 'summary' && renderFeeSummaryForm()}
+        ) : (
+          <div className="analytics-container">
+            <div className="panel full-width">
+              {renderMnemonicUsage()}
+            </div>
           </div>
-        </div>
-        
-        {error && <div className="error-message">{error}</div>}
-        
-        <div className="results-section">
-          {searchType === 'single' && renderSingleWaiverResults()}
-          {searchType === 'multiple' && renderMultipleWaiverResults()}
-          {searchType === 'summary' && renderFeeSummaryResults()}
-        </div>
-      </div>
-      
-      <footer className="footer">
+        )}
+      </main>
+
+      <footer className="afr-footer">
         <p>© 2025 Wells Fargo. All rights reserved.</p>
+        <p>Account Fee Review System v1.0</p>
       </footer>
     </div>
   );
