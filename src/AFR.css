@@ -1,0 +1,741 @@
+/* Wells Fargo Colors */
+:root {
+    --wf-red: #D71E28;
+    --wf-gold: #FFCD35;
+    --wf-dark-red: #B01B23;
+    --wf-gray: #5F6062;
+    --wf-light-gray: #E6E6E6;
+    --wf-dark-gray: #333333;
+    --wf-black: #000000;
+    --wf-white: #FFFFFF;
+    --wf-cream: #F6F3EB;
+    --shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
+    --shadow-medium: 0 4px 12px rgba(0, 0, 0, 0.15);
+    --transition: all 0.3s ease;
+  }
+  
+  /* Base Styles */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: 'Open Sans', sans-serif;
+    background-color: var(--wf-cream);
+    color: var(--wf-dark-gray);
+    line-height: 1.6;
+  }
+  
+  .afr-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  /* Header Styles */
+  .header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--wf-light-gray);
+  }
+  
+  .logo {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .logo-icon {
+    height: 40px;
+    width: 40px;
+    margin-right: 15px;
+    background-color: var(--wf-red);
+    border-radius: 50%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .stagecoach {
+    width: 30px;
+    height: 20px;
+    background-color: var(--wf-gold);
+    position: relative;
+    border-radius: 8px 8px 0 0;
+  }
+  
+  .stagecoach:before {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 30px;
+    height: 5px;
+    background-color: var(--wf-gold);
+    border-radius: 0 0 8px 8px;
+  }
+  
+  .logo h1 {
+    font-size: 1.8rem;
+    color: var(--wf-red);
+    font-weight: 700;
+  }
+  
+  .header h2 {
+    font-size: 1.5rem;
+    color: var(--wf-gray);
+    font-weight: 600;
+  }
+  
+  /* Popular Mnemonics Section */
+  .popular-mnemonics {
+    background-color: var(--wf-white);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: var(--shadow-light);
+  }
+  
+  .popular-mnemonics h3 {
+    font-size: 1.2rem;
+    margin-bottom: 15px;
+    color: var(--wf-dark-gray);
+    border-bottom: 1px solid var(--wf-light-gray);
+    padding-bottom: 10px;
+  }
+  
+  .mnemonics-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .mnemonic-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .mnemonic-name {
+    flex: 2;
+    font-weight: 600;
+    color: var(--wf-dark-gray);
+  }
+  
+  .mnemonic-count {
+    flex: 0 0 40px;
+    text-align: center;
+    font-weight: 700;
+    color: var(--wf-red);
+  }
+  
+  .mnemonic-bar {
+    flex: 3;
+    height: 8px;
+    background-color: var(--wf-light-gray);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  
+  .mnemonic-fill {
+    height: 100%;
+    background-color: var(--wf-red);
+    border-radius: 4px;
+    transition: var(--transition);
+  }
+  
+  /* Main Content */
+  .main-content {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+  
+  /* Search Container */
+  .search-container {
+    background-color: var(--wf-white);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--shadow-light);
+  }
+  
+  .search-tabs {
+    display: flex;
+    background-color: var(--wf-light-gray);
+  }
+  
+  .tab-button {
+    flex: 1;
+    padding: 16px;
+    background: none;
+    border: none;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--wf-gray);
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  
+  .tab-button:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+  
+  .tab-button.active {
+    background-color: var(--wf-white);
+    color: var(--wf-red);
+    box-shadow: inset 0 3px 0 var(--wf-red);
+  }
+  
+  .search-panel {
+    padding: 25px;
+  }
+  
+  .search-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .form-group label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--wf-gray);
+  }
+  
+  .form-group input {
+    padding: 12px 15px;
+    border: 1px solid var(--wf-light-gray);
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: var(--transition);
+  }
+  
+  .form-group input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(215, 30, 40, 0.2);
+    border-color: var(--wf-red);
+  }
+  
+  .btn-search {
+    margin-top: 10px;
+    padding: 14px 20px;
+    background-color: var(--wf-red);
+    color: var(--wf-white);
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    align-self: flex-start;
+  }
+  
+  .btn-search:hover {
+    background-color: var(--wf-dark-red);
+  }
+  
+  .btn-search:disabled {
+    background-color: var(--wf-gray);
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+  
+  /* Error Message */
+  .error-message {
+    padding: 15px;
+    background-color: rgba(215, 30, 40, 0.1);
+    color: var(--wf-red);
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+  
+  /* Results Section */
+  .results-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .results-container {
+    background-color: var(--wf-white);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--shadow-light);
+  }
+  
+  .results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background-color: var(--wf-dark-gray);
+    color: var(--wf-white);
+  }
+  
+  .results-header h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+  
+  .account-badge, .date-badge {
+    padding: 6px 12px;
+    background-color: var(--wf-red);
+    color: var(--wf-white);
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  
+  .results-body {
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  
+  /* Info Cards */
+  .info-card {
+    background-color: var(--wf-cream);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--shadow-light);
+  }
+  
+  .info-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background-color: var(--wf-light-gray);
+  }
+  
+  .info-card-header h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--wf-dark-gray);
+  }
+  
+  .status-badge {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  
+  .status-badge.success {
+    background-color: rgba(0, 150, 50, 0.15);
+    color: rgb(0, 120, 40);
+  }
+  
+  .status-badge.neutral {
+    background-color: rgba(95, 96, 98, 0.15);
+    color: var(--wf-gray);
+  }
+  
+  .info-card-body {
+    padding: 15px;
+  }
+  
+  .waiver-list {
+    list-style-type: none;
+  }
+  
+  .waiver-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--wf-light-gray);
+  }
+  
+  .waiver-item:last-child {
+    border-bottom: none;
+  }
+  
+  .waiver-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    font-size: 0.8rem;
+  }
+  
+  .waiver-item.applied .waiver-icon {
+    background-color: rgba(0, 150, 50, 0.15);
+    color: rgb(0, 120, 40);
+  }
+  
+  .waiver-item.not-applied .waiver-icon {
+    background-color: rgba(215, 30, 40, 0.15);
+    color: var(--wf-red);
+  }
+  
+  .waiver-name {
+    font-size: 0.9rem;
+    color: var(--wf-dark-gray);
+  }
+  
+  .no-data {
+    padding: 15px 0;
+    text-align: center;
+    color: var(--wf-gray);
+    font-style: italic;
+    font-size: 0.9rem;
+  }
+  
+  /* Multiple Accounts Results */
+  .multiple-results {
+    padding: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+  
+  .account-result {
+    background-color: var(--wf-cream);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--shadow-light);
+  }
+  
+  .account-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    background-color: var(--wf-light-gray);
+  }
+  
+  .account-header h4 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--wf-dark-gray);
+  }
+  
+  .account-details {
+    padding: 15px;
+    display: flex;
+    gap: 10px;
+  }
+  
+  .waiver-section {
+    flex: 1;
+  }
+  
+  .waiver-section h5 {
+    font-size: 0.8rem;
+    color: var(--wf-gray);
+    margin-bottom: 8px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--wf-light-gray);
+  }
+  
+  .mini-waiver-list {
+    list-style-type: none;
+  }
+  
+  .mini-waiver-item {
+    font-size: 0.8rem;
+    padding: 4px 0;
+    color: var(--wf-dark-gray);
+  }
+  
+  .mini-waiver-list.not-applied-list .mini-waiver-item {
+    color: var(--wf-gray);
+  }
+  
+  .more-item {
+    color: var(--wf-red) !important;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  
+  .no-data-small {
+    font-size: 0.8rem;
+    color: var(--wf-gray);
+    font-style: italic;
+  }
+  
+  /* Fee Summary Results */
+  .summary-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    padding: 20px;
+    background-color: var(--wf-cream);
+  }
+  
+  .stat-card {
+    background-color: var(--wf-white);
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: var(--shadow-light);
+    transition: var(--transition);
+  }
+  
+  .stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-medium);
+  }
+  
+  .stat-value {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--wf-red);
+    margin-bottom: 5px;
+  }
+  
+  .stat-label {
+    font-size: 0.9rem;
+    color: var(--wf-gray);
+  }
+  
+  .timeline-container {
+    padding: 20px;
+  }
+  
+  .timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  .timeline-header h4 {
+    font-size: 1.1rem;
+    color: var(--wf-dark-gray);
+  }
+  
+  .date-range {
+    font-size: 0.9rem;
+    color: var(--wf-gray);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .date-separator {
+    color: var(--wf-gray);
+  }
+  
+  .timeline {
+    position: relative;
+    padding-left: 30px;
+  }
+  
+  .timeline:before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    height: 100%;
+    width: 2px;
+    background-color: var(--wf-light-gray);
+  }
+  
+  .timeline-item {
+    position: relative;
+    margin-bottom: 25px;
+    padding-bottom: 25px;
+    border-bottom: 1px dashed var(--wf-light-gray);
+  }
+  
+  .timeline-item:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+  
+  .timeline-date {
+    position: absolute;
+    left: -30px;
+    top: 0;
+    width: 30px;
+    font-size: 0.8rem;
+    color: var(--wf-gray);
+    text-align: center;
+  }
+  
+  .timeline-marker {
+    position: absolute;
+    left: -15px;
+    top: 0;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background-color: var(--wf-white);
+    border: 2px solid var(--wf-gray);
+    transform: translateX(-50%);
+    z-index: 1;
+  }
+  
+  .timeline-item.waived .timeline-marker {
+    border-color: rgb(0, 120, 40);
+  }
+  
+  .timeline-item.charged .timeline-marker {
+    border-color: var(--wf-red);
+  }
+  
+  .timeline-content {
+    padding-left: 15px;
+  }
+  
+  .timeline-amount {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--wf-dark-gray);
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .timeline-status {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 12px;
+  }
+  
+  .timeline-status.waived-text {
+    background-color: rgba(0, 150, 50, 0.15);
+    color: rgb(0, 120, 40);
+  }
+  
+  .timeline-status.charged-text {
+    background-color: rgba(215, 30, 40, 0.15);
+    color: var(--wf-red);
+  }
+  
+  .timeline-mnemonics {
+    margin-top: 8px;
+    font-size: 0.85rem;
+  }
+  
+  .mnemonics-label {
+    color: var(--wf-gray);
+    margin-right: 5px;
+  }
+  
+  .timeline-mnemonic {
+    display: inline-block;
+    background-color: var(--wf-light-gray);
+    color: var(--wf-dark-gray);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+  }
+  
+  /* Footer */
+  .footer {
+    margin-top: 40px;
+    text-align: center;
+    padding: 20px;
+    color: var(--wf-gray);
+    font-size: 0.9rem;
+    border-top: 1px solid var(--wf-light-gray);
+  }
+  
+  /* Responsive Styles */
+  @media (max-width: 992px) {
+    .results-body {
+      grid-template-columns: 1fr;
+    }
+    
+    .summary-stats {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .search-tabs {
+      flex-direction: column;
+    }
+    
+    .tab-button.active {
+      box-shadow: inset 3px 0 0 var(--wf-red);
+    }
+    
+    .multiple-results {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  /* Animations */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .results-container {
+    animation: fadeIn 0.4s ease forwards;
+  }
+  
+  /* Wells Fargo Theme Enhancements */
+  .info-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+    transition: var(--transition);
+  }
+  
+  .btn-search:active {
+    transform: scale(0.98);
+  }
+  
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: var(--wf-light-gray);
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: var(--wf-gray);
+    border-radius: 4px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--wf-red);
+  }
+  
+  /* Dropdown Focus States */
+  input:focus, select:focus, textarea:focus, button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(215, 30, 40, 0.2);
+  }
+  
+  /* Loader Animation */
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  .loader {
+    border: 4px solid var(--wf-light-gray);
+    border-top: 4px solid var(--wf-red);
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+  }

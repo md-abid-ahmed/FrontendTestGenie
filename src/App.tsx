@@ -1,9 +1,10 @@
 
-import Jira from "./Jira"; // Make sure the file exports a component named 'Jira'
+import AFR from "./AFR";
+
 
 function App() {
   return (
-    <Jira />
+<AFR/>
   );
 }
 
